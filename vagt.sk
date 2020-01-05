@@ -1,0 +1,233 @@
+options:
+  V: &c&lVAGT &8»
+  header: &8&m-----&r &c&m-----&r &4&lVAGT DROP &8&m-----&r &c&m-----&r
+  infoAdmin: &8&m-----&r &c&m-----&r &4&lVAGT INFO &e: &4&lADMIN &8&m-----&r &c&m-----&r
+  info: &8&m-----&r &c&m-----&r &4&lVAGT INFO &8&m-----&r &c&m-----&r
+  vagtFil: plugins/SkriptYAML/Vagt/%{_uuid}%.yml
+  H: &c&lHAYDES &8»
+
+on join:
+  if {ansat::%uuid of player%} is set:
+    make console execute command "manuadd %player% C-Vagt"
+    set player's balance to 50
+    make console execute command "warp c %player%"
+    delete {ansat::%uuid of player%}
+    broadcast "&8[&3&lHAYDES&8] &7Byd vores nye &cC-Vagt &7velkommen: &b%player%"
+
+
+
+
+
+function getYamlValueString(value: Text, file: Text) :: Text:
+  set {_val} to yaml value "%{_value}%" from file "%{_file}%"
+  return "%{_val}%"
+
+function getYamlValueInt(value: Text, file: Text) :: Integer:
+  set {_val} to yaml value "%{_value}%" from file "%{_file}%"
+  return {_val}
+
+function setYamlInt(value: Text, file: Text, r: Integer):
+  set yaml value "%{_value}%" from file "%{_file}%" to {_r}
+
+function setYamlString(value: Text, file: Text, r: String):
+  set yaml value "%{_value}%" from file "%{_file}%" to "%{_r}%"
+
+on join:
+  if {fyret::%uuid of player%} is set:
+    make console execute command "manuadd %player% Spiller"
+    set player's balance to 50
+    make console execute command "warp c %player%"
+    delete {fyret::%uuid of player%}
+    setYamlString("Spiller.Rank", "plugins/SkriptYAML/SpillerInfo/%uuid of player%.yml", "C")
+
+function log(logText: Text, file: Text):
+  log "%{_logText}%" to "%{_file}%"
+
+function erVagt(p: Player) :: Boolean:
+  set {_uuid} to uuid of {_p}
+  set {_test} to getYamlValueString("Vagt.Navn", "plugins/SkriptYAML/%{_uuid}%.yml")
+  if getYamlValueString("Vagt.Navn", "plugins/SkriptYAML/Vagt/%{_uuid}%.yml") is set:
+    return true
+    send "%{_test}%" to {_p}
+  else:
+    return false
+
+function harBande(p: Player) :: Boolean:
+  set {_uuid} to uuid of {_p}
+  if getYamlValueString("Bande.Har.Bande", "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml") is "Ja":
+    return true
+  else:
+    return false
+
+function vagtHelp(p: Player):
+  send "Ja orker ik skrive det så gør det senere" to {_p}
+
+function fyrVagt(vagt: Player, admin: Player, grund: Text, silent: Boolean):
+  set {_uuid} to uuid of {_vagt}
+  log("ADMIN: %{_admin}%, FYRET: %{_vagt}%, GRUND: %{_grund}%, SILENT: %{_silent}% TID: %now%", "vagtfyret.log")
+  remove "%{_vagt}%" from yaml list "Lige.Ansat" from file "plugins/SkriptYAML/Vagt/Vagt.yml"
+  add "%{_vagt}%" to yaml list "Fyret.List" from file "plugins/SkriptYAML/Vagt/Vagt.yml"
+  set {fyret::%{_uuid}%} to true
+  df "plugins/SkriptYAML/Vagt/%{_uuid}%.yml"
+  make console execute command "kick %{_vagt}% \n&cDu er blevet &4&lFYRET!\n&4&lGRUND:\n&c%{_grund}%"
+  if {_silent} is false:
+    broadcast ""
+    broadcast "{@H} &7Vagten &3%{_vagt}% &7er blevet fyret!"
+    broadcast "{@H} &7Grund: &c%{_grund}%"
+    broadcast ""
+
+
+function ansætVagt(vagt: Player, admin: Player):
+  set {_uuid} to uuid of {_vagt}
+  set {ansat::tid::%{_uuid}%} to now
+  log("ADMIN: %{_admin}%, ANSAT: %{_vagt}%, TID: %now%", "vagtansættelse.log")
+  add "%{_vagt}%" to yaml list "Lige.Ansat" from file "plugins/SkriptYAML/Vagt/Vagt.yml"
+  set {ansat::%{_uuid}%} to true
+  setYamlString("Vagt.Navn", "{@vagtFil}", "%{_vagt}%")
+  setYamlString("Vagt.Ansat", "{@vagtFil}", "%now%")
+  setYamlInt("Vagt.Kills", "{@vagtFil}", 0)
+  setYamlInt("Vagt.Deaths", "{@vagtFil}", 0)
+  setYamlInt("Vagt.Jails", "{@vagtFil}", 0)
+  setYamlInt("Vagt.Dropped", "{@vagtFil}", 0)
+  setYamlInt("Vagt.Godt", "{@vagtFil}", 0)
+  setYamlInt("Vagt.Lort", "{@vagtFil}", 0)
+  setYamlString("Vagt.Egnet", "{@vagtFil}", "§cNej")
+  make console execute command "kick %{_vagt}% &cDu skulle lige relog for at blive vagt"
+
+
+
+function vagtInfo(p: Player, vagt: Player, admin: Boolean):
+  set {_uuid} to uuid of {_vagt}
+  set {_ansat} to getYamlValueString("Vagt.Ansat", "{@vagtFil}")
+  set {_vagtsiden} to difference between {ansat::tid::%{_uuid}%} and now
+  replace all "minutes" with "minutter" in {_vagtsiden}
+  replace all "minute" with "minut" in {_vagtsiden}
+  replace all "hours" with "timer" in {_vagtsiden}
+  replace all "hour" with "time" in {_vagtsiden}
+  replace all "seconds" with "sekunder" in {_vagtsiden}
+  replace all "second" with "sekund" in {_vagtsiden}
+  replace all "days" with "dage" in {_vagtsiden}
+  replace all "day" with "dag" in {_vagtsiden}
+  set {_kills} to getYamlValueString("Vagt.Kills", "{@vagtFil}")
+  set {_deaths} to getYamlValueString("Vagt.Deaths", "{@vagtFil}")
+  set {_jails} to getYamlValueString("Vagt.Jails", "{@vagtFil}")
+  set {_dropped} to getYamlValueString("Vagt.Dropped", "{@vagtFil}")
+  set {_godt} to getYamlValueString("Vagt.Godt", "{@vagtFil}")
+  set {_lort} to getYamlValueString("Vagt.Lort", "{@vagtFil}")
+  set {_egnet} to getYamlValueString("Vagt.Egnet", "{@vagtFil}")
+  send "" to {_p}
+  send "{@info}" to {_p}
+  send "" to {_p}
+  send "&7Vagt: &c%{_vagt}%" to {_p}
+  send "&7Ansat: &c%{_ansat}%" to {_p}
+  send "&7Vagt siden: &c%{_vagtsiden}%" to {_p}
+  send "&7Kills: &c%{_kills}%" to {_p}
+  send "&7Deaths: &c%{_deaths}%" to {_p}
+  send "&7Jails: &c%{_jails}%" to {_p}
+  send "&7Penge: &c%{_vagt}'s balance%" to {_p}
+  send "" to {_p}
+  if {_admin} is true:
+    send "{@infoAdmin}" to {_p}
+    send "" to {_p}
+    send "&7Dropped Items: &c%{_dropped}%" to {_p}
+    send "&7Godt: &c%{_godt}%" to {_p}
+    send "&7Dårligt: &c%{_lort}%" to {_p}
+    send "&7Egnet til promote: %{_egnet}%" to {_p}
+    send "&8(&7&oSystemet vurderer selv om vagten er egnet til promote&8)" to {_p}
+    send "&8(&7&oDog er det stadig under opbygning&8)" to {_p}
+    send "" to {_p}
+  send "{@info}" to {_p}
+
+command /tpv [<offline player>]:
+  permission: *
+  trigger:
+    make player execute command "vanish"
+    teleport player to arg-1
+
+on drop:
+  if uncolored prefix of player contains "Vagt", "Officer", "Inspektør" or "Direktør":
+    set {_uuid} to uuid of player
+    set {_player} to player
+    send "&cVAGT: &7%player%, &cDROP: &7%event-item%, &cLOC: &7%location of player%, &cTID: &7%now%" to console
+    log("VAGT: %player%, DROP: %event-item%, LOC: %location of player%, TID: %now%", "vagtdrop.log")
+    setYamlInt("Vagt.Dropped", "{@vagtFil}", getYamlValueInt("Vagt.Dropped", "{@vagtFil}") + 1)
+    setYamlInt("Vagt.Lort", "{@vagtFil}", getYamlValueInt("Vagt.Lort", "{@vagtFil}") + 50)
+    loop all players:
+      if ("%loop-player%" parsed as offline player) is an op:
+        set {_lore} to "%lore of event-item%"
+        if {_lore} is not set:
+          set {_lore} to "Ingen Lore"
+        if {_lore} is "<none>":
+          set {_lore} to "Ingen Lore"
+        send "" to loop-player
+        send "{@header}" to loop-player
+        send "" to loop-player
+        send "&4&LINFORMATION:" to loop-player
+        send "&8- &7&lVAGT: &c%player% &7&l- %colored prefix of player%" to loop-player
+        send "&8- &7&lDROP: &c%event-item%" to loop-player
+        send "&8- &7&lLORE: &c%{_lore}%" to loop-player
+        send "&8- &7&lLOKATION: &c%location of player%" to loop-player
+        send "&8- &7&lTID: &c%now%" to loop-player
+        send "" to loop-player
+        set {_chat} to "   &8&o(&7&oTryk her for at vanish og tp til vagten&8&o)||ttp:&7Tryk her||cmd:/tpv %{_player}%"
+        json("%loop-player%", "%{_chat}%")
+        send "" to loop-player
+        send "{@header}" to loop-player
+        send "" to loop-player
+
+on death of player:
+  attacker is a player
+  victim is a player
+  if erVagt(victim) is true:
+    set {_uuid} to uuid of victim
+    log("VAGT: %victim%, ATTACKER: %attacker%, LOKATION: %event-location%, TID: %now%", "vagtdøde.log")
+    setYamlInt("Vagt.Lort", "{@vagtFil}", getYamlValueInt("Vagt.Lort", "{@vagtFil}") + 100)
+    setYamlInt("Vagt.Deaths", "{@vagtFil}", getYamlValueInt("Vagt.Deaths", "{@vagtFil}") + 1)
+    if getYamlValueInt("Vagt.Deaths", "{@vagtFil}") >= 10:
+      fyrVagt(victim, null, "Død for meget", true)
+    else:
+      broadcast "&8[&3&lHAYDES&8] &7Vagten &b%victim% &7blev dræbt af &b%attacker%&7!"
+      setYamlInt("Spiller.Kills", "plugins/SkriptYAML/SpillerInfo/%uuid of attacker%.yml", getYamlValueInt("Spiller.Kills", "plugins/SkriptYAML/%uuid of attacker%.yml") + 1)
+      if harBande(attacker) is true:
+        set {_bande} to getYamlValueString("Bande.Bande.Navn", "plugins/SkriptYAML/SpillerInfo/%uuid of attacker%.yml")
+        setYamlInt("Bande.Vagt.Kills", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", getYamlValueInt("Bande.Vagt.Kills", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml") + 1)
+
+
+
+command /vagt [<text>] [<offline player>] [<text>] [<text>] [<text>]:
+  aliases: guard, vagter
+  permission: group.vagt
+  permission message: {@V} &7Du har ikke adgang til dette!
+  trigger:
+    #set {_check} to getYamlValueString("Vagt.Navn", "plugins/SkriptYAML/%uuid of player%.yml")
+    #if {_check} is "<none>":
+      #vagtHelp(player)
+      #stop
+    if arg-1 is not set:
+      vagtInfo(player, player, false)
+    if arg-1 is "help", "hjælp" or "commands":
+      vagtHelp(player)
+      stop
+    if arg-1 is "admin":
+      if "%uncolored prefix of player%" does not contain "Admin", "Ejer", "Inspektør" or "Direktør":
+        send "{@V} &7Du har ikke adgang til dette!"
+        stop
+      if arg-2 is not set:
+        send "{@V} &7Vælg en vagt at adminstrere!"
+        stop
+      if arg-3 is "ansæt" or "hire":
+        set {_check} to getYamlValueString("Vagt.Navn", "plugins/SkriptYAML/%uuid of arg-2%.yml")
+        send "%{_check}%"
+        if {_check} is not "<none>":
+          send "{@V} &4%arg-2% &7er allerede vagt!"
+          stop
+        ansætVagt(arg-2, player)
+      if arg-3 is "fyr" or "fire":
+        #if "%uncolored prefix of player%" does not contain "Vagt":
+          #send "{@V} &4%arg-2% &7er ikke vagt!"
+          #stop
+        if arg-4 is "-s":
+          fyrVagt(arg-2, player, arg-5, true)
+        else:
+          fyrVagt(arg-2, player, arg-5, false)
+      #vagtInfo(player, arg-2, true)

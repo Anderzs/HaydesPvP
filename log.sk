@@ -1,0 +1,56 @@
+function log(logText: Text, file: Text):
+  log "%{_logText}%" to "%{_file}%"
+
+on command "mute":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "mute.log")
+
+on command "ban":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "ban.log")
+
+on command "eco":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "eco.log")
+
+on command "unjail":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "unjail.log")
+
+on command "jail":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "jail.log")
+
+on command "broadcast":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "broadcast.log")
+
+on command "manuadd":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "manuadd.log")
+
+on command "manuaddp":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "manuaddp.log")
+
+on command "manudelsub":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "manudelsub.log")
+
+on command "manudelp":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "manudelp.log")
+
+on command "pay":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "pay.log")
+
+on command "tempban":
+	if player has permission "group.vagt", "group.mod", "group.admin" or "*":
+		log("%player% - %command% %arguments% - TID: %hour%:%minute%:%second%", "tempban.log")
+
+on rightclick on a ender chest:
+	if player doesn't have permission "group.vagt":
+		log("%player% har prøvet og åbene en enderchest hvor han står: %location of player%, og chesten stå: %location of clicked block% - TID: %now%", "enderchest.log")
+		cancel event
+		stop

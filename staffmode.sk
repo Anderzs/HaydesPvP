@@ -1,0 +1,14 @@
+options:
+  P: &c&lHaydes >>
+
+on disconnect:
+  if {staffmode::%uuid of player%} is set:
+    delete {staffmode::%uuid of player%}
+
+
+
+command /staffmode:
+  permission: staff.mode
+  permission message: {@P} &7Du har ikke adgang til denne kommando!
+  trigger:
+    if {staffmode::%uuid of player%} is set:

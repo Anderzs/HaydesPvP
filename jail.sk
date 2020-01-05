@@ -1,0 +1,46 @@
+options:
+  newPlayerFileF: ../../SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  playerFileF: plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  playerFile: ../../SkriptYAML/SpillerInfo/%uuid of player%.yml
+  H: &c&lHAYDES &8»
+  V: &c&lVAGT &8»
+  header: &8&m-----&r &c&m-----&r &4&lJAIL COMMANDS &8&m-----&r &c&m-----&r
+
+function jailPlayer(p: Player, grund: Text):
+  set {_uuid} to uuid of {_p}
+
+
+
+function jailCommands(p: Player):
+  send "" to {_p}
+  send "{@header}" to {_p}
+  send "" to {_p}
+  send "&7Du kan bruge følgende commands til jail:" to {_p}
+  send "&c/Ej&7, &c/Jail&7, &c/Iso&7, &c/Isolation" to {_p}
+  send "" to {_p}
+  send "&7Du kan jaile for følgende:" to {_p}
+  send "&cSlag, Slagvagt, Nopvp, våben, armor, narko, hakkebombe, provo" to {_p}
+  send "&7&o(Er du i tvivl om jails, så spørg en anden vagt)" to {_p}
+  send "" to {_p}
+  send "&7Eksempel på Jail:" to {_p}
+  send "&c/ej LegendeBente slag" to {_p}
+  send "&7&o(Syntax: /ej <spiller> <grund>)" to {_p}
+  send "" to {_p}
+  send "{@header}" to {_p}
+  send "" to {_p}
+
+command /ej [<offline player>] [<text>] [<text>]:
+  aliases: jail, iso, isolation
+  permission: group.vagt
+  permission message: {@V} &7Du har ikke adgang til denne kommando!
+  trigger:
+    if arg-1 is not set:
+      jailCommands(player)
+      stop
+    if arg-2 is not set:
+      jailCommands(player)
+      stop
+    set {_target} to "%arg-1%" parsed as offline player
+    set {_grund} to arg-2
+    if {_target} is online:
+      jailPlayer({_target}, {_grund})

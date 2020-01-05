@@ -1,2 +1,139 @@
-function test():
-  broadcast "tis"
+options:
+  H: &c&lHAYDES &8»
+  B: &c&lBANDE &8»
+  newPlayerFileF: ../../SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  playerFileF: plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  defaultHeader: &8&m-----&r &c&m-----&r &4&lBANDE COMMANDS &8&m-----&r &c&m-----&r
+  BannedNavne: Bare, Skriv, En, Masse, Her and Senere
+  BandeOpretPris: 1000
+
+function getYamlValueString(value: Text, file: Text) :: Text:
+  set {_val} to yaml value "%{_value}%" from file "%{_file}%"
+  return {_val}
+
+function getYamlValueInt(value: Text, file: Text) :: Integer:
+  set {_val} to yaml value "%{_value}%" from file "%{_file}%"
+  return {_val}
+
+function setValue(dir: Text, file: Text, value: Text):
+  if "%{_value}%" contains "1", "2", "3", "4", "5", "6", "7", "8" or "9":
+    set {_newvalue} to "%{_value}%" parsed as a number
+    set yaml value "%{_dir}%" from file "%{_file}%" to ("%{_value}%" parsed as a number)
+    stop
+  set yaml value "%{_dir}%" from file "%{_file}%" to "%{_value}%"
+
+
+function defaultBandeMenu(p: Player):
+  send "" to {_p}
+  send "{@defaultHeader}" to {_p}
+  send "" to {_p}
+  send "&cBande Commands:" to {_p}
+  send " &8- &e/bande opret <navn> &8- &7Opret en bande &8(&c${@BandeOpretPris}&8)" to {_p}
+  send " &8- &e/bande slet &8- &7Slet din bande" to {_p}
+  send " &8- &e/bande forlad &8- &7Forlad din bande" to {_p}
+  send " &8- &e/bande invite <spiller> &8- &7Inviter til din bande" to {_p}
+  send " &8- &e/bande info <bande> &8- &7Se info om en bande" to {_p}
+  send "" to {_p}
+  send "{@defaultHeader}" to {_p}
+  send "" to {_p}
+
+function harBande(p: Player) :: String:
+  set {_uuid} to uuid of {_p}
+  set {_check::bande} to yaml value "Bande.Har.Bande" from file "plugins/SkriptYAML/SpillerInfo/%uuid of {_p}%.yml"
+  if {_check::bande} is not set:
+    return "Nej"
+  else if {_check::bande} is "Nej":
+    return "Nej"
+  else:
+    return "Ja"
+
+function checkBandeExists(bande: Text) :: Boolean:
+  set {_bander::*} to yaml list "Bander" from file "plugins/SkriptYAML/Bande/List.yml"
+  loop {_bander::*}:
+    if "%loop-value%" is equal to "%{_bande}%":
+      return true
+      stop
+  return false
+
+function opretBande(p: Player, bande: Text):
+  set {_uuid} to uuid of {_p}
+  remove {@BandeOpretPris} from {_p}'s balance
+  setValue("Bande.Bande.Navn", "{@playerFileF}", "%{_bande}%")
+  setValue("Bande.Har.Bande", "{@playerFileF}", "Ja")
+  setValue("Bande.Navn", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "%{_bande}%")
+  setValue("Bande.Medlemmer.Maks", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "3")
+  setValue("Bande.Medlemmer.Antal", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "1")
+  setValue("Bande.Ejer.Navn", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "%{_p}%")
+  setValue("Bande.Ejer.UUID", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "%{_uuid}%")
+  setValue("Bande.Penge", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "0")
+  add "%{_bande}%" to yaml list "Bander" from file "plugins/SkriptYAML/Bande/List.yml"
+  add "%{_p}%" to yaml list "Bande.Medlemmer.Navn" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+  add "%{_uuid}%" to yaml list "Bande.Medlemmer.UUID" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+  send "{@B} &7Du har oprettet banden: &c%{_bande}%" to {_p}
+  send "{@B} &7Inviter spillere til banden med: &c/bande invite <spiller>" to {_p}
+  send "{@B} &7SPILLER: &c%{_bande}% &7OPRETTET BANDE: &c%{_bande}%; &4&l%now%" to console
+
+function forladBande(p: Player):
+  set {_uuid} to uuid of {_p}
+  set {_bande} to getYamlValueString("Bande.Bande.Navn", "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml")
+  set {_bande::medlemmer::navn::*} to yaml list "Bande.Medlemmer.Navn" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+  set {_bande::medlemmer::uuid::*} to yaml list "Bande.Medlemmer.UUID" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+  remove "%{_p}%" from {_bande::medlemmer::navn::*}
+  remove "%{_uuid}%" from {_bande::medlemmer::uuid::*}
+  loop {_bande::medlemmer::navn::*}:
+    add "%loop-value%" to yaml list "Bande.Medlemmer.Navn" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+  loop {_bande::medlemmer::uuid::*}:
+    add "%loop-value%" to yaml list "Bande.Medlemmer.UUID" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+  #set yaml list "Bande.Medlemmer.Navn" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml" to "%{_bande::medlemmer::navn::*}%"
+  #set yaml list "Bande.Medlemmer.UUID" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml" to "%{_bande::medlemmer::uuid::*}%"
+  set {_newAntal} to getYamlValueInt("Bande.Medlemmer.Antal", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml") - 1
+
+  setValue("Bande.Medlemmer.Antal", "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml", "%{_newAntal}%")
+  setValue("Bande.Har.Bande", "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml", "Nej")
+  setValue("Bande.Bande.Navn", "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml", "Ingen")
+  loop {_bande::medlemmer::navn::*}:
+    if ("%loop-value%" parsed as offline player) is online:
+      send "{@B} &7Spilleren &c%{_p}% &7har forladt banden!" to ("%loop-value%" parsed as offline player)
+  send "{@B} &7Du har forladt banden &c%{_bande}%&7!" to {_p}
+
+
+command /bande [<text>] [<text>] [<text>]:
+  executable by: player
+  aliases: gang, team
+  trigger:
+    if arg-1 is not set:
+      defaultBandeMenu(player)
+      stop
+    if arg-1 is "opret", "lav" or "create":
+      if arg-2 is not set:
+        send "{@B} &7Du skal skrive et navn til din bande!"
+        stop
+      if "%arg-2%" contains "{@BannedNavne}":
+        send "{@B} &7Din bande må ikke hedde: &c%arg-2%&7!"
+        stop
+      if "%arg-2%" contains "*":
+        send "{@B} &7Din bande må ikke indeholde: &c*&7!"
+        stop
+      if player's balance < {@BandeOpretPris}:
+        send "{@B} &7Du mangler: &c$%{@BandeOpretPris} - player's balance% &7for at lave en bande!"
+        stop
+      if harBande(player) = "Ja":
+        send "{@B} &7Du er allerede medlem af en bande!"
+        stop
+      if checkBandeExists("%arg-2%") = true:
+        send "{@B} &7En anden bande ejer navnet: &c%arg-2%"
+        stop
+      opretBande(player, "%arg-2%")
+      stop
+    if arg-1 is "forlad" or "leave":
+      if harBande(player) = "Nej":
+        send "{@B} &7Du er ikke medlem af en bande!"
+        stop
+      set {_bande} to getYamlValueString("Bande.Bande.Navn", "plugins/SkriptYAML/SpillerInfo/%uuid of player%.yml")
+      set {_check::ejer} to yaml value "Bande.Ejer.Navn" from file "plugins/SkriptYAML/Bande/%{_bande}%/Info.yml"
+      if "%player%" is equal to "%{_check::ejer}%":
+        send "{@B} &7Du kan ikke forlade din bande, da du ejer den"
+        send "{@B} &7Brug: &c/bande slet &7for at slette din bande"
+        stop
+      forladBande(player)
+      stop

@@ -1,0 +1,47 @@
+options:
+  newPlayerFileF: ../../SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  playerFileF: plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  playerFile: ../../SkriptYAML/SpillerInfo/%uuid of player%.yml
+  M: &b&lMISSION &8»
+
+variables:
+  {difficulty::easy} = 100
+  {difficulty::medium} = 250
+  {difficulty::hard} = 500
+
+function setSlot(p: Player, slot: Number, item: Item, name: Text, lore: Text):
+  set slot {_slot} of {_p}'s current inventory to {_item} named "%{_name}%" with lore "%{_lore}%"
+
+function addYaml(location: Text, file: Text, value: Text):
+  add "%{_value}%" to yaml list "%{_location}%" from file "%{_file}%"
+
+function checkMissionKlaret(p: Player, mission: Text) :: Boolean:
+  set {_uuid} to uuid of {_p}
+  set {_mission::list::klaret::*} to yaml list "Missioner.Klaret" from file "{@playerFileF}"
+  loop {_mission::list::klaret::*}:
+    if "%loop-value%" is "%{_mission}%":
+      return true
+  return false
+
+
+function missionKlaret(p: Player, mission: Text, difficulty: Text):
+  set {_uuid} to uuid of {_p}
+  addYaml("Missioner.Klaret", "{@playerFileF}", "%{_mission}%")
+  set {_reward} to {difficulty::%{_difficulty}%}
+  send "" to {_p}
+  send "{@M} &7Du har klaret missionen: &3%{_mission}%" to {_p}
+  send "{@M} &7Du har fået &3$%{_reward}% &7for missionen!" to {_p}
+  send "" to {_p}
+  add {_reward} to player's balance
+
+
+command /mission:
+  executable by: player
+  aliases: missioner, achievement, achievements
+  trigger:
+    open chest with 3 rows named "&3&lMISSIONER"
+    setSlot(0, diamond, "Test", "Dette er en test")
+
+on npc right click:
+  if citizen is named "&3&lMISSIONER":
+    make player execute command "mission"

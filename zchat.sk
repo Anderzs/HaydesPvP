@@ -1,0 +1,56 @@
+options:
+  newPlayerFileF: ../../SkriptYAML/SpillerInfo/%{_uuid}%.yml
+  newPlayerFile: ../../SkriptYAML/SpillerInfo/%uuid of player%.yml
+  playerFileF: plugins/SkriptYAML/SpillerInfo/%uuid of {_p}%.yml
+  playerFile: plugins/SkriptYAML/SpillerInfo/%uuid of player%.yml
+
+function playerIsMuted(p: Player) :: boolean:
+  return false
+
+function getYamlValueString(value: Text, file: Text) :: Text:
+  set {_val} to yaml value "%{_value}%" from file "%{_file}%"
+  #send "%{_val}% %{_value}% %{_file}%" to console
+  return {_val}
+
+
+function getYamlValueInt(value: Text, file: Text) :: Integer:
+  set {_val} to yaml value "%{_value}%" from file "%{_file}%"
+  return {_val}
+
+
+function ingenBandeBesked(p: Player, message: Text):
+  set {_chat} to "%colored {_p}'s prefix%%{_p}% &8» &7%{_message}%"
+  set {_rank} to getYamlValueString("Spiller.Rank", "{@playerFileF}")
+  set {_bande} to "Ingen"
+  set {_bande::lvl} to "0"
+  set {_chat} to "&8[&%{_rank}%%{_rank}%&8]%colored {_p}'s prefix%%{_p}% &8» &7%{_message}%"
+  #set {_chat} to "&8[&7%{_bande}%&8] %colored {_p}'s prefix%%{_p}%||ttp:&8» &7Spiller information &8«%newline%%newline%&7Navn & Rank: &c&l%colored {_p}'s prefix%%{_p}%%newline%&7Bande: &c%{_bande}%%newline%&7Bande LvL: &c%{_bande::lvl}%%newline%&7Penge: &c%{_p}'s balance%|| &8» %{_message}%"
+  json("@a","%{_chat}%")
+
+
+function harBandeBesked(p: Player, message: Text):
+  set {_bande} to getYamlValueString("Bande.Bande.Navn", "{@playerFileF}")
+  set {_rank} to getYamlValueString("Spiller.Rank", "{@playerFileF}")
+  set {_bande::lvl} to getYamlValueInt("Bande.Bande.Lvl", "{@playerFileF}")
+  set {_chat} to "&8[&%{_rank}%%{_rank}%&8]&8[&7%{_bande}%&8]%colored {_p}'s prefix%%{_p}% &8» &7%{_message}%"
+  json("@a", "%{_chat}%")
+
+function vagtBesked(p: Player, message: Text):
+  set {_chat} to "%colored {_p}'s suffix%%colored {_p}'s prefix%%{_p}% &8» &7%{_message}%"
+  json("@a", "%{_chat}%")
+
+
+on chat:
+  cancel event
+  set {_message} to chat message
+  set {_check::bande} to yaml value "Bande.Har.Bande" from file "{@playerFile}"
+  set {_check::vagt} to yaml value "Vagt.Navn" from file "plugins/SkriptYAML/Vagt/%uuid of player%.yml"
+  if {_check::vagt} is set:
+    vagtBesked(player, {_message})
+    stop
+  if {_check::bande} is not set:
+    ingenBandeBesked(player, {_message})
+  else if {_check::bande} is "Nej":
+    ingenBandeBesked(player, {_message})
+  else:
+    harBandeBesked(player, {_message})
