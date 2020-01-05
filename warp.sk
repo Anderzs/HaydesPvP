@@ -8,7 +8,14 @@ command /setwarp [<text>]:
       send "{@W} &7Du skal navngive dit warp!"
       stop
     set {warp::%arg-1%} to location at player
-    set yaml value "Warp.%arg-1%" from file "plugins/SkriptYAML/Warps/Warp.yml" to "%{warp::%arg-1%}%"
+    set {_x} to x-coordinate of player
+    set {_y} to y-coordinate of player
+    set {_z} to z-coordinate of player
+    set {_world} to world of player
+    set yaml value "Warp.%arg-1%.X" from file "plugins/SkriptYAML/Warps/Warp.yml" to {_x}
+    set yaml value "Warp.%arg.1%.Y" from file "plugins/SkriptYAML/Warps/Warp.yml" to {_y}
+    set yaml value "Warp.%arg.1%.Z" from file "plugins/SkriptYAML/Warps/Warp.yml" to {_z}
+    set yaml value "Warp.%arg.1%.WORLD" from file "plugins/SkriptYAML/Warps/Warp.yml" to {_yaw}
     send "{@W} &7Du har sat warpet &3%arg-1%&7!"
     send "{@W} &7Lokation: &c%location at player%"
 
@@ -17,7 +24,10 @@ command /warp [<text>] [<text>]:
   executable by: console, player
   permission: *
   trigger:
-    set {_lokation} to yaml value "Warp.%arg-1%" from file "plugins/SkriptYAML/Warps/Warp.yml"
-    teleport player to {_lokation}
+    set {_x} to yaml value "Warp.%arg-1%.X" from file "plugins/SkriptYAML/Warps/Warp.yml"
+    set {_y} to yaml value "Warp.%arg-1%.Y" from file "plugins/SkriptYAML/Warps/Warp.yml"
+    set {_z} to yaml value "Warp.%arg-1%.Z" from file "plugins/SkriptYAML/Warps/Warp.yml"
+    set {_world} to yaml value "Warp.%arg-1%.WORLD" from file "plugins/SkriptYAML/Warps/Warp.yml"
+    teleport player to location at {_x}, {_y}, {_z} in world "%{_world}%"
     if arg-2 does not contain "-s":
       send "{@W} &7Du er blevet teleporteret til: &3%arg-1%"
