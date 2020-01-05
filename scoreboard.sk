@@ -1,0 +1,71 @@
+variables:
+	{1::rank::letter} = "C"
+	{2::rank::letter} = "B"
+	{3::rank::letter} = "A"
+
+	{C::rank::number} = 1
+	{B::rank::number} = 2
+	{A::rank::number} = 3
+
+	{1::rankup} = 75000
+	{2::rankup} = 2000000
+
+	{C::rankup} = 75000
+	{B::rankup} = 2000000
+
+
+
+
+function scoreboard(p: player):
+	set {_uuid} to "%uuid of {_p}%"
+	set {_bande.%{_uuid}%} to yaml value "Bande.Bande.Navn" from file "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml"
+	set {_rank} to yaml value "Spiller.Rank" from file "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml"
+	set {_nextrank} to {%{_rank}%::rank::number} + 1
+	if {_nextrank} > 3:
+		set {_nextrank} to "MAX"
+	else:
+		set {_nextrank} to {%{_nextrank}%::rank::letter}
+	#set {_nextrank} to uppercase({_nextrank})
+	wipe {_p}'s sidebar
+	set name of sidebar of {_p} to "&3&lHAYDESPVP&7.dk"
+	set score "&7" in sidebar of {_p} to 13
+	set score "&f&l (!) &3Information" in sidebar of {_p} to 12
+	set {_2rank} to yaml value "Flere.Ranks" from file "../../SkriptYAML/SpillerInfo/%{_uuid}%.yml"
+	replace all "[" and "]" in {_rank} with ""
+	set score "&7  Rank &8» &f%{_rank}%&7" in sidebar of {_p} to 9
+	#set score "&7  Navn &8» &f%{_p}%" in sidebar of {_p} to 9
+	set score "&7  Bande &8» &f%{_bande.%{_uuid}%}%" in sidebar of {_p} to 7
+	set score "&1" in sidebar of {_p} to 6
+	set score "&f&l (!) &3Saldo" in sidebar of {_p} to 5
+	set score "&7  Penge &8» &f%{_p}'s balance%" in sidebar of {_p} to 4
+	set score "&2                 " in sidebar of {_p} to 3
+	set score "&f&l (!) &3Rankup" in sidebar of {_p} to 2
+	#set score "&7  Næste rank &8» &f%uppercase({_newrank2})%" in sidebar of {_p} to 1
+	set {_bal} to {_p}'s balance
+	set {_rank} to yaml value "Spiller.Rank" from file "plugins/SkriptYAML/SpillerInfo/%{_uuid}%.yml"
+	set {_mangler} to {%{_rank}%::rankup} - {_bal}
+	if {_mangler} is less than 0:
+		set {_mangler} to "&f0 - &a/rankup"
+	set score "&7  Mangler &8» &f$%{_mangler}%" in sidebar of {_p} to 1
+	set score "&2" in sidebar of {_p} to 0
+
+on player join:
+  scoreboard(player)
+
+command /scoreboard [<offline player>]:
+	executable by: console
+	trigger:
+		scoreboard(arg-1)
+
+on join:
+	wait 4 ticks
+	scoreboard(player)
+
+every 5 seconds:
+	loop all players:
+		scoreboard(loop-player)
+
+
+on skript load:
+	loop all players:
+		scoreboard(loop-player)
