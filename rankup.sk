@@ -1,0 +1,40 @@
+options:
+    H: &c&lHAYDES &8»
+
+variables:
+	{1::rank::letter} = "C"
+	{2::rank::letter} = "B"
+	{3::rank::letter} = "A"
+
+	{C::rank::number} = 1
+	{B::rank::number} = 2
+	{A::rank::number} = 3
+
+	{1::rankup} = 75000
+	{2::rankup} = 2000000
+
+	{C::rankup} = 75000
+	{B::rankup} = 2000000
+
+
+function rankup(p: Player):
+  #TODO: LAV DET HER
+  stop
+
+
+command /rankup [<offline player>]:
+  executable by: console
+  trigger:
+    rankup(arg-1)
+
+
+on right click on a sign:
+  if line 1 of sign is "&3RANKUP":
+    set {_rankup::rank} to uncolored line 2 of sign
+    set {_rankup::rank} to {%{_rankup::rank}%::rank::number} + 1
+    set {_pris} to {%{_rankup::rank}%::rankup}
+    if player's balance < {_pris}:
+      send "{@H} &7Du har ikke penge nok til dette!"
+      send "{@H} &7Du mangler: &3$%{_pris} - player's balance% &7for dette!"
+      stop
+    make console execute command "rankup %player%"

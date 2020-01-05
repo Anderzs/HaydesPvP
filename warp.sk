@@ -1,0 +1,23 @@
+options:
+  W: &3&lWarps &8»
+
+command /setwarp [<text>]:
+  permission: *
+  trigger:
+    if arg-1 is not set:
+      send "{@W} &7Du skal navngive dit warp!"
+      stop
+    set {warp::%arg-1%} to location at player
+    set yaml value "Warp.%arg-1%" from file "plugins/SkriptYAML/Warps/Warp.yml" to "%{warp::%arg-1%}%"
+    send "{@W} &7Du har sat warpet &3%arg-1%&7!"
+    send "{@W} &7Lokation: &c%location at player%"
+
+
+command /warp [<text>] [<text>]:
+  executable by: console, player
+  permission: *
+  trigger:
+    set {_lokation} to yaml value "Warp.%arg-1%" from file "plugins/SkriptYAML/Warps/Warp.yml"
+    teleport player to {_lokation}
+    if arg-2 does not contain "-s":
+      send "{@W} &7Du er blevet teleporteret til: &3%arg-1%"
