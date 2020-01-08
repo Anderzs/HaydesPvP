@@ -11,6 +11,8 @@ function getYamlValueString(value: Text, file: Text) :: Text:
   set {_val} to yaml value "%{_value}%" from file "%{_file}%"
   return {_val}
 
+#tis i min numse
+
 function getYamlValueInt(value: Text, file: Text) :: Integer:
   set {_val} to yaml value "%{_value}%" from file "%{_file}%"
   return {_val}
