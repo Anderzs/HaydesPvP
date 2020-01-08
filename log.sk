@@ -51,6 +51,6 @@ on command "tempban":
 
 on rightclick on a ender chest:
 	if player doesn't have permission "group.vagt":
-		log("%player% har prøvet og åbene en enderchest hvor han står: %location of player%, og chesten stå: %location of clicked block% - TID: %now%", "enderchest.log")
+		log("%player% har prøvet og åbne en enderchest hvor han står: %location of player%, og chesten stå: %location of clicked block% - TID: %now%", "enderchest.log")
 		cancel event
 		stop
